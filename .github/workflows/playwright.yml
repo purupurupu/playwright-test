@@ -8,6 +8,11 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [headless, headed]
+    name: Playwright (${{ matrix.mode }})
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -17,11 +22,21 @@ jobs:
       run: npm install -g pnpm && pnpm install
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
-    - name: Run Playwright tests
+    - name: Run Playwright tests (headless)
+      if: matrix.mode == 'headless'
       run: pnpm exec playwright test
+    - name: Run Playwright tests (headed)
+      if: matrix.mode == 'headed'
+      run: xvfb-run pnpm exec playwright test --headed
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
-        name: playwright-report
+        name: playwright-report-${{ matrix.mode }}
         path: playwright-report/
+        retention-days: 30
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: test-results-${{ matrix.mode }}
+        path: test-results/
         retention-days: 30
