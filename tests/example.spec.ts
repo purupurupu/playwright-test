@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test';
 
+test.describe('Intentional Failure', () => {
+  test('this test should fail to verify artifact capture', async ({ page }) => {
+    await page.goto('/');
+    // This will fail: the actual title is "Demo App"
+    await expect(page).toHaveTitle('This Title Does Not Exist');
+  });
+});
+
 test.describe('Navigation', () => {
   test('has correct title', async ({ page }) => {
     await page.goto('/');
